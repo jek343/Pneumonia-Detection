@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+Mask_RCNN/
 
 # Folders To Ignore
 data/
