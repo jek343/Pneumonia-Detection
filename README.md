@@ -17,4 +17,4 @@
        |   ├── _visualize.py
        |   ...
        ```
-4. Use data_manipulation.py as necessary. Load files and their annotations with data_annotation.split_dataset() and then data_annotation.load_dataset().
+4. Use data_manipulation.py as necessary. Load files and their annotations with ``data_annotation.split_dataset()`` and then ``data_annotation.load_dataset()``.
