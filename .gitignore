@@ -5,6 +5,3 @@ Mask_RCNN/
 # Folders To Ignore
 data/
 .ipynb_checkpoints/
-
-# Jupyter Notebook
-Dataset.ipynb
