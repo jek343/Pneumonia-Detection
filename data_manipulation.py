@@ -11,18 +11,30 @@ import pickle
 import random
 import sys
 
-ORIG_SIZE = 1024
-DATA_DIR = "data" #TODO fill in the data directory you're using
-ROOT_DIR = "lung_opacity_detection" #TODO fill in the directory this file is in
-PICKLED_TRAIN = "dataset_train.obj"
-PICKLED_VALID = "dataset_val.obj"
-TRAIN_DICOM_DIR = os.path.join(DATA_DIR, 'stage_1_train_images')
+from skimage import feature
+from skimage.color import rgb2gray
+from skimage.exposure import adjust_sigmoid
+import skimage.transform
 
 from Mask_RCNN.mrcnn.config import Config
 from Mask_RCNN.mrcnn import utils
 import Mask_RCNN.mrcnn.model as modellib
 from Mask_RCNN.mrcnn import visualize
 from Mask_RCNN.mrcnn.model import log
+
+# ================= DIRECTORIES =================
+
+DATA_DIR = "data" #TODO fill in the data directory you're using
+ROOT_DIR = "lung_opacity_detection" #TODO fill in the directory this file is in
+PICKLED_TRAIN = "dataset_train.obj"
+PICKLED_VALID = "dataset_val.obj"
+TRAIN_DICOM_DIR = os.path.join(DATA_DIR, 'stage_1_train_images')
+
+# ================= CONSTANTS =================
+ORIG_SIZE = 1024
+RESIZED_SIZE = 500
+SMALL_TRAIN_SIZE = 1000
+SMALL_VAL_SIZE = 800
 
 class DetectorDataset(utils.Dataset):
     """Dataset class for training pneumonia detection on the RSNA pneumonia dataset.
@@ -75,6 +87,9 @@ class DetectorDataset(utils.Dataset):
                     mask[:, :, i] = mask_instance
                     class_ids[i] = 1
         return mask.astype(np.bool), class_ids.astype(np.int32)
+
+    def size(self):
+        return len(self.image_info)
 
 def get_dicom_fps(dicom_dir):
     dicom_fps = glob.glob(dicom_dir+'/'+'*.dcm')
@@ -133,3 +148,55 @@ def load_dataset():
         valid_detector = pickle.load(f)
 
     return train_detector, valid_detector
+
+''' Generates a subset of the trainin dataset, held by detector.
+    For effective use, SMALL_TRAIN_SIZE must not be greater than twice
+    the number of positive examples in the dataset. '''
+def small_train_matrix(detector, thresholded=False, edge_detected=False, e_sigma=0.5):
+    pn_remaining = int((SMALL_TRAIN_SIZE)/2)
+    not_pn_remaining = int((SMALL_TRAIN_SIZE)/2)
+    img_id = 0
+
+    train_x = np.zeros((SMALL_TRAIN_SIZE, RESIZED_SIZE, RESIZED_SIZE))
+    train_y = np.zeros((SMALL_TRAIN_SIZE, ))
+    train_id = 0
+
+    while pn_remaining != 0 or not_pn_remaining != 0:
+        image = detector.load_image(img_id)
+        class_id = detector.load_mask(img_id)[1][0]
+
+        if (class_id == 1 and pn_remaining > 0) or (class_id == 0 and not_pn_remaining > 0):
+            if thresholded:
+                image = adjust_sigmoid(image)
+
+            image = rgb2gray(image)
+
+            if edge_detected:
+                image = feature.canny(image, sigma = e_sigma)
+
+            train_x[train_id, :, :] = skimage.transform.resize(image, output_shape = (RESIZED_SIZE, RESIZED_SIZE))
+            train_y[train_id] = class_id
+            train_id += 1
+
+            if class_id == 1:
+                pn_remaining -= 1
+            else:
+                not_pn_remaining -= 1
+        img_id += 1
+
+    return train_x, train_y
+
+def val_train_matrix(detector):
+    val_x = np.zeros((SMALL_VAL_SIZE, RESIZED_SIZE, RESIZED_SIZE))
+    val_y = np.zeros((SMALL_VAL_SIZE, ))
+    val_id = 0
+
+    for img_id in range(SMALL_VAL_SIZE):
+        image = rgb2gray(detector.load_image(img_id))
+        image = skimage.transform.resize(image, output_shape = (RESIZED_SIZE, RESIZED_SIZE))
+        class_id = detector.load_mask(img_id)[1][0]
+
+        val_x[val_id, :, :] = image
+        val_y[val_id] = class_id
+
+    return val_x, val_y
