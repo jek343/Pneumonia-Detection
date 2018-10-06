@@ -3,5 +3,4 @@ __pycache__/
 Mask_RCNN/
 
 # Folders To Ignore
-data/
 .ipynb_checkpoints/
