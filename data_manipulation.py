@@ -91,6 +91,9 @@ class DetectorDataset(utils.Dataset):
     def size(self):
         return len(self.image_info)
 
+    def labels_list(self):
+        return [self.load_mask(i)[1][0] for i in range(self.size())]
+
 def get_dicom_fps(dicom_dir):
     dicom_fps = glob.glob(dicom_dir+'/'+'*.dcm')
     return list(set(dicom_fps))
