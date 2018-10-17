@@ -25,10 +25,15 @@ import data_manipulation
 import data_generator
 import pickle
 
+# ========== CONSTANTS ========== #
+IMAGE_DIM = 128
+
 with open("data/dataset_train.obj", "rb") as f:
     train = pickle.load(f)
 with open("data/dataset_val.obj", "rb") as f:
     val = pickle.load(f)
+
+vgg16 = VGG16(weights='imagenet', include_top=False, input_shape = (IMAGE_DIM, IMAGE_DIM, 3))
 
 class_maxpool1 = MaxPool2D(pool_size=(2,2), strides = None, padding='same', name = 'classifier_maxpool1')(vgg16.layers[-1].output)
 class_conv2d_1 = Conv2D(filters = 256, kernel_size=(1,1), padding='same', name='classifier_conv2d_1',
@@ -48,7 +53,7 @@ my_model.compile(loss='categorical_crossentropy', optimizer='adam')
 train_labels = train.labels_list()
 val_labels = val.labels_list()
 
-params = {'dim': (512,512),
+params = {'dim': (IMAGE_DIM,IMAGE_DIM),
           'batch_size': 64,
           'n_classes': 2,
           'n_channels': 3,
