@@ -110,7 +110,7 @@ def parse_dataset(dicom_dir, anns):
             pass
     return image_fps, image_annotations
 
-def datset_split(exists=True):
+def dataset_split(exists=True):
     train_pickle = os.path.join(DATA_DIR, PICKLED_TRAIN)
     valid_pickle = os.path.join(DATA_DIR, PICKLED_VALID)
 
