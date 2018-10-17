@@ -1,7 +1,9 @@
-import data_manipulation
-
 import numpy as np
 from sklearn import svm
+
+import data_manipulation
+
+
 
 ''' Returns an SVM Classifier trained on the provided dataset.
 

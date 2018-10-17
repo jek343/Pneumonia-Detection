@@ -24,8 +24,8 @@ from Mask_RCNN.mrcnn.model import log
 
 # ================= DIRECTORIES =================
 
-DATA_DIR = "data" #TODO fill in the data directory you're using
-ROOT_DIR = "lung_opacity_detection" #TODO fill in the directory this file is in
+DATA_DIR = 'C:\\Users\\katie\\Documents\\DataScience\\PneumoniaDetection\\dataSet'
+ROOT_DIR = 'C:\\Users\\katie\\Documents\\DataScience\\PneumoniaDetection'
 PICKLED_TRAIN = "dataset_train.obj"
 PICKLED_VALID = "dataset_val.obj"
 TRAIN_DICOM_DIR = os.path.join(DATA_DIR, 'stage_1_train_images')
