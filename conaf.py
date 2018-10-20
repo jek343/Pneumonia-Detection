@@ -6,19 +6,17 @@ from keras.preprocessing import image
 from keras.applications.vgg16 import preprocess_input
 from keras.layers import Dense, MaxPool2D, Conv2D, Flatten
 from keras.models import Model
-<<<<<<< HEAD
-from keras import initializers
-=======
 
->>>>>>> 2d860b3b1346ace672dcb1662c9e3909407d2c2e
 import cv2
 import glob
 import json
 import math
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 import pydicom
 import pandas as pd
+import pickle
 import random
 import sys
 
