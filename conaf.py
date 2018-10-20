@@ -7,17 +7,14 @@ from keras.applications.vgg16 import preprocess_input
 from keras.layers import Dense, MaxPool2D, Conv2D, Flatten
 from keras.models import Model
 from keras import initializers
-
 import cv2
 import glob
 import json
 import math
 import matplotlib.pyplot as plt
-import numpy as np
 import os
 import pydicom
 import pandas as pd
-import pickle
 import random
 import sys
 
@@ -25,10 +22,12 @@ import data_manipulation
 import data_generator
 import pickle
 
-with open("data/dataset_train.obj", "rb") as f:
+with open("C:\\Users\\katie\\Documents\\DataScience\\PneumoniaDetection\\data\\dataset_val.obj", "rb") as f:
     train = pickle.load(f)
 with open("data/dataset_val.obj", "rb") as f:
     val = pickle.load(f)
+
+vgg16 = VGG16(weights='imagenet', include_top=False, input_shape = (1024, 1024, 3))
 
 class_maxpool1 = MaxPool2D(pool_size=(2,2), strides = None, padding='same', name = 'classifier_maxpool1')(vgg16.layers[-1].output)
 class_conv2d_1 = Conv2D(filters = 256, kernel_size=(1,1), padding='same', name='classifier_conv2d_1',
