@@ -4,8 +4,8 @@
 # In[5]:
 
 
-get_ipython().run_line_magic('load_ext', 'autoreload')
-get_ipython().run_line_magic('autoreload', '2')
+#get_ipython().run_line_magic('load_ext', 'autoreload')
+#get_ipython().run_line_magic('autoreload', '2')
 import data_manipulation
 import pickle
 import pydicom
@@ -20,7 +20,7 @@ from skimage.color import rgb2gray
 # In[4]:
 
 
-data_manipulation.datset_split()
+#data_manipulation.datset_split()
 
 
 # In[6]:
@@ -122,15 +122,4 @@ def prior():
 if __name__ == "__main__":
     cnt_box = prior()
     np.save("Prior", cnt_box)
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
 
