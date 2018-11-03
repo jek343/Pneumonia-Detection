@@ -34,10 +34,10 @@ LOSS_WEIGHTS = {CLASS_OUTPUT_NAME : 1.0,
                 LOC_OUTPUT_NAME : 1.0}
 
 def create_localizer_branch(in_layer):
-    loc_maxpool1 = MaxPool2D(pool_size=(2,2), strides = None, padding='same', name = 'loc_maxpool1')(in_layer)
-    loc_maxpool2 = MaxPool2D(pool_size=(2,2), strides = None, padding='same', name = 'loc_maxpool2')(loc_maxpool1)
-    sigmoid_activation1 = Activation('sigmoid', name = 'loc_sigmoid_activation1')(loc_maxpool2)
-
+    local_conv2d_1 = Conv2D(filters = 256, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_1')(in_layer)
+    local_conv2d_2 = Conv2D(filters = 64, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_2')(local_conv2d_1)
+    local_conv2d_3 = Conv2D(filters = 32, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_3')(local_conv2d_2)
+    sigmoid_activation1 = Activation('sigmoid', name = 'loc_sigmoid_activation1')(localizer_conv2d_3)
     return sigmoid_activation1
 
 def create_classifier_branch(in_layer):
@@ -67,7 +67,7 @@ def create_model():
     val_set  : DetectorDataset object for the validation set. '''
 def train_model(model, train_set, val_set):
     model = create_model()
-    model.compile(optimizer='adam', loss=LOSSES, loss_weights=LOSS_WEIGHTS)
+    model.compile(optimizer='adam', loss=LOSSES, loss_weights=LOSS_WEIGHTS, metrics=['accuracy'])
 
     train_labels = train.labels_list()
     val_labels = val.labels_list()
