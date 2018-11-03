@@ -95,7 +95,7 @@ class DetectorDataset(utils.Dataset):
         return [self.load_mask(i)[1][0] for i in range(self.size())]
 
 def get_dicom_fps(dicom_dir):
-    dicom_fps = glob.glob(dicom_dir+'/'+'*.dcm')
+    dicom_fps = glob.glob(dicom_dir+ os.sep +'*.dcm')
     return list(set(dicom_fps))
 
 def parse_dataset(dicom_dir, anns):
