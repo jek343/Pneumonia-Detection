@@ -1,5 +1,6 @@
 import data_manipulation
 import numpy as np
+import skimage.transform
 import keras
 
 class DataGenerator(keras.utils.Sequence):
@@ -49,7 +50,13 @@ class DataGenerator(keras.utils.Sequence):
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             # Store sample
-            X[i,] = self.detector.load_image(ID) #not resized
+            image = self.detector.load_image(ID)
+            mask, _ = self.detector.load_mas(ID)
+
+            if image.shape[0] != self.dim:
+                X[i,] = skimage.transform.resize(image, output_shape = (*self.dim, self.n_channels))
+            else:
+                X[i,] = image
 
             # Store class
             y[i] = self.labels[ID]
