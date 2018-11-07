@@ -37,7 +37,7 @@ def create_localizer_branch(in_layer):
     local_conv2d_1 = Conv2D(filters = 256, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_1')(in_layer)
     local_conv2d_2 = Conv2D(filters = 64, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_2')(local_conv2d_1)
     local_conv2d_3 = Conv2D(filters = 32, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_3')(local_conv2d_2)
-    sigmoid_activation1 = Activation('sigmoid', name = 'output2')(localizer_conv2d_3)
+    sigmoid_activation1 = Activation('sigmoid', name = 'output2')(local_conv2d_3)
     return sigmoid_activation1
 
 def create_classifier_branch(in_layer):
@@ -82,4 +82,9 @@ def train_model(model, train_set, val_set):
 
 def main():
     m = create_model()
-    m.summary()
+    print(m.summary())
+
+
+if __name__ == "__main__":
+    main()
+
