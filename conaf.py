@@ -7,7 +7,7 @@ import data_generator
 
 import keras as k
 from keras import initializers
-from keras.applications.vgg16 import VGG16
+from keras.applications.resnet50 import ResNet50
 from keras.preprocessing import image
 from keras.applications.vgg16 import preprocess_input
 from keras.layers import Dense, MaxPool2D, Conv2D, Flatten, Activation
@@ -25,8 +25,8 @@ PARAMS = {'dim': (IMAGE_DIM,IMAGE_DIM),
           'n_channels': 3,
           'shuffle': True}
 
-CLASS_OUTPUT_NAME = "class_output"
-LOC_OUTPUT_NAME = "localizer_output"
+CLASS_OUTPUT_NAME = "output1"
+LOC_OUTPUT_NAME = "output2"
 
 LOSSES = {CLASS_OUTPUT_NAME : "categorical_crossentropy",
           LOC_OUTPUT_NAME : "mean_squared_error"}
@@ -37,7 +37,7 @@ def create_localizer_branch(in_layer):
     local_conv2d_1 = Conv2D(filters = 256, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_1')(in_layer)
     local_conv2d_2 = Conv2D(filters = 64, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_2')(local_conv2d_1)
     local_conv2d_3 = Conv2D(filters = 32, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_3')(local_conv2d_2)
-    sigmoid_activation1 = Activation('sigmoid', name = 'loc_sigmoid_activation1')(localizer_conv2d_3)
+    sigmoid_activation1 = Activation('sigmoid', name = 'output2')(localizer_conv2d_3)
     return sigmoid_activation1
 
 def create_classifier_branch(in_layer):
@@ -50,17 +50,17 @@ def create_classifier_branch(in_layer):
                         activation='relu')(class_conv2d_2)
 
     flatten_1 = Flatten()(class_conv2d_3)
-    class_dense_1 = Dense(units = 2, activation ='softmax')(flatten_1)
+    class_dense_1 = Dense(units = 2, activation ='softmax', name = 'output1')(flatten_1)
 
     return class_dense_1
 
 def create_model():
-    vgg16 = VGG16(weights='imagenet', include_top=False, input_shape = (IMAGE_DIM, IMAGE_DIM, 3))
+    res50 = ResNet50(weights='imagenet', include_top=False, input_shape = (IMAGE_DIM, IMAGE_DIM, 3))
 
-    class_branch_output = create_classifier_branch(vgg16.layers[-1].output)
-    loc_branch_output = create_localizer_branch(vgg16.layers[-1].output)
+    class_branch_output = create_classifier_branch(res50.layers[-40].output)
+    loc_branch_output = create_localizer_branch(res50.layers[-40].output)
 
-    model = Model(input=vgg16.input, output = [class_branch_output, loc_branch_output])
+    model = Model(input=res50.input, output = [class_branch_output, loc_branch_output])
     return model
 
 ''' train_set: DetectorDataset object for the training set.
@@ -79,3 +79,7 @@ def train_model(model, train_set, val_set):
     model.fit_generator(generator=training_generator,
                         validation_data=validation_generator,
                         use_multiprocessing=False)
+
+def main():
+    m = create_model()
+    m.summary()
