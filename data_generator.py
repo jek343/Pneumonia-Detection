@@ -56,7 +56,7 @@ class DataGenerator(keras.utils.Sequence):
             comMask = np.any(mask, axis = 2).astype(int)
             if image.shape[0] != self.dim:
                 X[i,] = skimage.transform.resize(image, output_shape = (*self.dim, self.n_channels))
-                masks[i,] = skimage.transform.resize(image, output_shape = (*self.dim))
+                masks[i,] = skimage.transform.resize(image, output_shape = (self.dim))
             else:
                 X[i,] = image
                 masks[i,] = comMask
