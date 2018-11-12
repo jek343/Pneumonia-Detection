@@ -10,7 +10,7 @@ from keras import initializers
 from keras.applications.resnet50 import ResNet50
 from keras.preprocessing import image
 from keras.applications.vgg16 import preprocess_input
-from keras.layers import Dense, MaxPool2D, Conv2D, Flatten, Activation
+from keras.layers import Dense, MaxPool2D, Conv2D, Flatten, Activation, UpSampling2D
 from keras.models import Model
 import numpy as np
 import tensorflow as tf
@@ -37,7 +37,10 @@ def create_localizer_branch(in_layer):
     local_conv2d_1 = Conv2D(filters = 256, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_1')(in_layer)
     local_conv2d_2 = Conv2D(filters = 64, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_2')(local_conv2d_1)
     local_conv2d_3 = Conv2D(filters = 32, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_3')(local_conv2d_2)
-    sigmoid_activation1 = Activation('sigmoid', name = 'output2')(local_conv2d_3)
+    local_conv2d_4 = Conv2D(filters = 1, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_4')(local_conv2d_3)
+    sigmoid_activation1 = Activation('sigmoid', name = 'output2')(local_conv2d_4)
+    #Assuming IMAGE DIM is 1024 --> create 7 upsampling layers
+    up_conv1 = 
     return sigmoid_activation1
 
 def create_classifier_branch(in_layer):
