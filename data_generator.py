@@ -1,5 +1,6 @@
 import data_manipulation
 import numpy as np
+import skimage.transform
 import keras
 
 class DataGenerator(keras.utils.Sequence):
@@ -41,17 +42,26 @@ class DataGenerator(keras.utils.Sequence):
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, list_IDs_temp):
-        'Generates data containing batch_size samples' # X : (n_samples, *dim, n_channels)
+        'Generates data containing batch_size samples'
         # Initialization
         X = np.empty((self.batch_size, *self.dim, self.n_channels))
         y = np.empty((self.batch_size), dtype=int)
+        masks = np.empty((self.batch_size, *self.dim))
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             # Store sample
-            X[i,] = self.detector.load_image(ID) #not resized
+            image = self.detector.load_image(ID)
+            mask, _ = self.detector.load_mask(ID)
+            comMask = np.any(mask, axis = 2).astype(int)
+            if image.shape[0] != self.dim:
+                X[i,] = skimage.transform.resize(image, output_shape = (*self.dim, self.n_channels))
+                masks[i,] = skimage.transform.resize(image, output_shape = self.dim)
+            else:
+                X[i,] = image
+                masks[i,] = comMask
 
             # Store class
             y[i] = self.labels[ID]
-
-        return X, keras.utils.to_categorical(y, num_classes=self.n_classes)
+        output = {'output1':keras.utils.to_categorical(y, num_classes=self.n_classes), 'output2':comMask}
+        return X, output
