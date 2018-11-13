@@ -10,7 +10,7 @@ from keras import initializers
 from keras.applications.resnet50 import ResNet50
 from keras.preprocessing import image
 from keras.applications.vgg16 import preprocess_input
-from keras.layers import Dense, MaxPool2D, Conv2D, Flatten, Activation
+from keras.layers import Dense, MaxPool2D, Conv2D, Flatten, Activation, UpSampling2D
 from keras.models import Model
 import numpy as np
 import tensorflow as tf
@@ -37,8 +37,17 @@ def create_localizer_branch(in_layer):
     local_conv2d_1 = Conv2D(filters = 256, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_1')(in_layer)
     local_conv2d_2 = Conv2D(filters = 64, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_2')(local_conv2d_1)
     local_conv2d_3 = Conv2D(filters = 32, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_3')(local_conv2d_2)
-    sigmoid_activation1 = Activation('sigmoid', name = 'output2')(local_conv2d_3)
-    return sigmoid_activation1
+    local_conv2d_4 = Conv2D(filters = 1, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_4')(local_conv2d_3)
+    sigmoid_activation1 = Activation('sigmoid', name = 'output2')(local_conv2d_4)
+    #Assuming IMAGE DIM is 1024 and output creats 8 x 8 maps--> create 7 upsampling layers
+    up_conv1 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upconv1')(sigmoid_activation1) #16
+    up_conv2 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upconv2')(up_conv1) #32
+    up_conv3 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upcon3')(up_conv2) #64
+    up_conv4 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upcon4')(up_conv3) #128
+    up_conv5 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upcon5')(up_conv4) #256
+    up_conv6 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upcon6')(up_conv5) #512
+    up_conv7 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upcon7')(up_conv6) #512
+    return up_conv7
 
 def create_classifier_branch(in_layer):
     class_maxpool1 = MaxPool2D(pool_size=(2,2), strides = None, padding='same', name = 'classifier_maxpool1')(in_layer)
@@ -87,4 +96,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
