@@ -58,7 +58,7 @@ def avg_iou(true_dict, pred_dict):
     f1 = 0
     for pId, box_pred in pred_dict.items():
         box_true = true_dict[pId]
-        cnt++
+        cnt += 1
         f1 = calculate_iou(box_true, box_pred)
     return (f1/cnt)
 
