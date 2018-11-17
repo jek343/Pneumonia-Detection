@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import os
 
 # ========== CONSTANTS ========== START
 DATA_DIR = 'data'
