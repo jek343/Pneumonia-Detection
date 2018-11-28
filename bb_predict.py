@@ -2,6 +2,10 @@ import numpy as np
 import skimage.measure
 import time
 import matplotlib.pyplot as plt
+import pickle
+import pydicom
+
+
 def point_inside(box, point):
 
 	return point[0] >= box[0] and point[0] <= (box[0] + box[2]) and point[1] >= box[1] and point[1] <= (box[1] + box[3])
@@ -117,7 +121,7 @@ def predict_bb(length, width, image, threshold, overlap_threshold):
 
 				if probability > threshold:
 
-					# Top left coordinate (x,y), length, width, probability
+					#  	Top left coordinate (x,y), length, width, probability
 					new_box = [x,y,i[0], i[1], probability]
 
 					# Remove boxes that are located inside of the new_box or don't add box
@@ -188,6 +192,10 @@ def predict_bb(length, width, image, threshold, overlap_threshold):
 
 if __name__ == "__main__":
 
+	with open("data/dataset_train.obj", "rb") as f:
+		train = pickle.load(f)
+	image = train.load_image(0)
+	print(type(image))
 	x = time.time()
 	zer = np.random.normal(0,1,[1024,1024])
 	print(zer.shape)
