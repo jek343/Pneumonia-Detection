@@ -4,6 +4,7 @@ import time
 import matplotlib.pyplot as plt
 import pickle
 import pydicom
+import overlap
 
 
 def point_inside(box, point):
@@ -110,6 +111,7 @@ def predict_bb(length, width, image, threshold, overlap_threshold):
         w = int(w)
         # Determine bounding boxes probabilities
         bb_shape = [[5,3],[5,4], [5,5], [7,3], [7,4], [10, 4], [10, 6], [10,8], [16, 8]]
+        bb_shape = [[3,5],[4,5], [5,5], [3,7], [4,7], [4, 10], [6, 10], [8, 10], [8, 16]]
 
         bounding_boxes = []
         for i in bb_shape:
@@ -128,19 +130,47 @@ def predict_bb(length, width, image, threshold, overlap_threshold):
                                         # if the current box is inside another box
 
                                         new_bounding_boxes = []
-                                        new_box_inside = False
+                                        new_box_add = True
+                                        orlap = True
+                                        rect1 = overlap.Rectangle(x, x + i[0], y, y + i[1])
+                                        bounding_boxes.append(new_box)
+                                        
+                                        
+                                        
+                                        
                                         for box in bounding_boxes:
+                                            
+                                            rect2 = overlap.Rectangle(box[0],box[0]+box[2],box[1],box[1]+box[3])
+                                            if rect1.is_intersect(rect2):
+                                                if box[4] >= probability:
+                                                    new_bounding_boxes.append(box)
+                                                    new_box_add = False
+                                        
+                                        if new_box_add:
+                                            new_bounding_boxes.append(new_box)
+#                                         for box in bounding_boxes:
+                                            
+                                                
+                                
+#                                             if rect1.is_intersect(overlap.Rectangle(box[0], box[0] + box[2], box[1], box[1] + box[3])):
+#                                                 orlap = False
+#                                                 if probability > box[4]:
+#                                                     new_box_add = True
+#                                                 else:
+#                                                     new_bounding_boxes.append(box)
+# #                                             else:
+# #                                                 print("not")
+# #                                                 if contains(box, new_box):
+# #                                                         new_box_inside = True
 
-                                                if not contains(box, new_box):
-                                                        new_bounding_boxes.append(box)
+# #                                                 elif contains(new_box, box):
+# #                                                         new_box_inside = True
+                                        
+#                                         if new_box_add or orlap:
+#                                                 #print(len(new_bounding_boxes))
+#                                                 new_bounding_boxes.append(new_box)
 
-                                                elif contains(new_box, box):
-                                                        new_box_inside = True
-
-                                        if not new_box_inside:
-                                                new_bounding_boxes.append(new_box)
-
-                                        bounding_boxes = new_bounding_boxes
+#                                         bounding_boxes = new_bounding_boxes
         # Merge boxes
         # loop = True
 
@@ -162,7 +192,7 @@ def predict_bb(length, width, image, threshold, overlap_threshold):
 
         # if boxes overlap for a certain threshold, merge them
                 # pick best two boxes at the end if two boxes still exceed threshold
-
+        print(len(bounding_boxes))
         bounding_boxes.sort(key = lambda x: x[4], reverse = True)
         num_boxes = min(3,len(bounding_boxes))
 
@@ -170,41 +200,44 @@ def predict_bb(length, width, image, threshold, overlap_threshold):
                 return []
         else:
                 predicted_boxes = bounding_boxes[:num_boxes]
-
+                #print(predicted_boxes)
                 for p in predicted_boxes:
+
                         lmult = len(image)/l
                         wmult = len(image[0])/w
-
+                        print(lmult)
+                        print(wmult)
                         p[0] = p[0] * lmult
                         p[1] = p[1] * wmult
                         p[2] = p[2] * lmult
                         p[3] = p[3] * wmult
-
-                return predicted_boxes
-                # I know the current coordinates
-
-
-        # Determine coordinates of the boxes in the actual image if they exist
-
-        # Return them in the appropriate format
-
-
-
-if __name__ == "__main__":
-
-        with open("data/dataset_train.obj", "rb") as f:
-                train = pickle.load(f)
-        image = train.load_image(0)
                 
-        print(type(image))
-        x = time.time()
-        zer = np.random.normal(0,1,[1024,1024])
-        print(zer.shape)
+                return predicted_boxes
 
-        output = predict_bb(32, 32, zer, 0.7, 0.5)
-        y = time.time()
-        plt.imshow(zer * 255)
-        print(y-x)
-        print("-____----")
-        print(output)
-        plt.show()
+
+# if __name__ == "__main__":
+
+#         with open("data/dataset_train.obj", "rb") as f:
+#                 train = pickle.load(f)
+#         image = train.load_mask(1)
+#         print(type(image[1]))
+#         print(image[1].shape)
+#         x = time.time()
+#         zer = np.random.normal(0,1,[1024,1024])
+#         print(zer.shape)
+
+#         output = predict_bb(32, 32, image[:,:,0], 0.7, 0.5)
+#         y = time.time()
+#         #plt.imshow(zer * 255)
+#         print(y-x)
+#         print("-____----")
+#         print(output)
+#         #plt.show()
+        
+        
+        
+        
+#         plt.imshow(image_array)
+#         poly = Polygon(coordinates)
+#         x,y = poly.exterior.xy
+#         plt.plot(x,y)
