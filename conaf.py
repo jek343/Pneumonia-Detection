@@ -10,8 +10,9 @@ from keras import initializers
 from keras.applications.resnet50 import ResNet50
 from keras.preprocessing import image
 from keras.applications.vgg16 import preprocess_input
-from keras.layers import Dense, MaxPool2D, Conv2D, Flatten, Activation, UpSampling2D
+from keras.layers import Dense, MaxPool2D, Conv2D, Flatten, Activation, UpSampling2D, Reshape
 from keras.models import Model
+from keras.callbacks import ModelCheckpoint
 import numpy as np
 import tensorflow as tf
 
@@ -20,7 +21,7 @@ IMAGE_DIM = 1024
 
 # ========== MODEL PARAMS ========== START
 PARAMS = {'dim': (IMAGE_DIM,IMAGE_DIM),
-          'batch_size': 2,
+          'batch_size': 4,
           'n_classes': 2,
           'n_channels': 3,
           'shuffle': True}
@@ -31,7 +32,7 @@ LOC_OUTPUT_NAME = "output2"
 LOSSES = {CLASS_OUTPUT_NAME : "categorical_crossentropy",
           LOC_OUTPUT_NAME : "mean_squared_error"}
 LOSS_WEIGHTS = {CLASS_OUTPUT_NAME : 1.0,
-                LOC_OUTPUT_NAME : 1.0}
+                LOC_OUTPUT_NAME : 200.0}
 
 def create_localizer_branch(in_layer):
     local_conv2d_1 = Conv2D(filters = 256, kernel_size = (1,1), padding = 'same', name = 'localizer_conv2d_1')(in_layer)
@@ -44,7 +45,10 @@ def create_localizer_branch(in_layer):
     up_conv2 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upconv2')(up_conv1) #32
     up_conv3 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upconv3')(up_conv2) #64
     up_conv4 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upconv4')(up_conv3) #128
-    output2 = Activation('sigmoid', name = 'output2')(up_conv4)
+    sigmoid_activation_out = Activation('sigmoid', name = 'sigmoid_out')(up_conv4)
+    output2 = Reshape((IMAGE_DIM, IMAGE_DIM), name = 'output2')(sigmoid_activation_out)
+
+
     #up_conv5 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upcon5')(up_conv4) #256
     #up_conv6 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upcon6')(up_conv5) #512
     #up_conv7 = UpSampling2D(size=(2, 2), data_format=None, interpolation='bilinear', name = 'upcon7')(up_conv6) #512
@@ -84,11 +88,16 @@ def train_model(model, train, val):
     training_generator = data_generator.DataGenerator(train, range(train.size()), train_labels, **PARAMS)
     validation_generator = data_generator.DataGenerator(val, range(val.size()), val_labels, **PARAMS)
 
+    filepath="completemodel_weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+    
+
     #TODO fit generator (ensure generator returns two outputs)
     model.fit_generator(generator=training_generator,
                         validation_data=validation_generator,
                         use_multiprocessing=True,
-                        epochs = 1)
+                        callbacks = [checkpoint],
+                        epochs = 15)
 
 def main():
     m = create_model()
